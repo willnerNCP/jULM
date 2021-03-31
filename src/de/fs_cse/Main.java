@@ -1,11 +1,22 @@
 package de.fs_cse;
 
 import de.fs_cse.core.MemoryPage;
+import de.fs_cse.core.VirtualMemory;
 
 public class Main {
 
     public static void main(String[] args) {
-        testMemoryPage();
+        testVirtualMemory();
+    }
+
+    public static void testVirtualMemory(){
+        VirtualMemory memory = new VirtualMemory();
+        long input1 = 0x89ABCDEF;
+        long input2 = 0x01234567;
+        memory.set(0, 4, input1);
+        memory.set(-4, 4, input2);
+        printAsHex(memory.get(0, 4));
+        printAsHex(memory.get(-4, 4));
     }
 
     public static void testMemoryPage(){
