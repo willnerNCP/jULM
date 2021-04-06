@@ -2,24 +2,26 @@ package de.fs_cse.core;
 
 public class OperationField {
 
-    byte rX;    //register represented by byte x
-    byte rY;    //register represented by byte y
-    byte rZ;    //register represented by byte z
+    //register bytes are actually saved as int to prevent implicit signed casting from byte to int
+    //also java internally stores bytes as ints so it doesnt really matter
+    public int rX;    //register represented by byte x
+    public int rY;    //register represented by byte y
+    public int rZ;    //register represented by byte z
 
-    long uX;    //unsigned integer represented by byte x
-    long uXY;   //unsigned integer represented by word xy
+    public long uX;    //unsigned integer represented by byte x
+    public long uXY;   //unsigned integer represented by word xy
 
-    long sX;    //signed integer represented by byte x
-    long sY;    //signed integer represented by byte y
-    long sXY;   //signed integer represented by word xy
-    long sXYZ;  //signed integer represented by the three bytes xyz
+    public long sX;    //signed integer represented by byte x
+    public long sY;    //signed integer represented by byte y
+    public long sXY;   //signed integer represented by word xy
+    public long sXYZ;  //signed integer represented by the three bytes xyz
 
     public OperationField(int opfield){
         if(opfield >>> 24 != 0) throw new IllegalArgumentException("Trying to create operation field from more than 3 bytes!");
 
-        rX = (byte)(opfield >>> 16);
-        rY = (byte)(opfield >>> 8);
-        rZ = (byte)(opfield);
+        rX = opfield >>> 16 & 0xFF;
+        rY = opfield >>> 8 & 0xFF;
+        rZ = opfield & 0xFF;
 
         //>>>: unsigned shift (fills in zeros)
         //implicit cast from int to long performs signed extension, but always fills in 0 in this case, because MSB is guaranteed to be 0.
@@ -86,8 +88,8 @@ public class OperationField {
         return "%" + toHex(rX) + " ->\tM(" + sY + " + %" + toHex(rZ) + ")";
     }
 
-    private static String toHex(byte b){
-        return "0x" + Long.toHexString((long)b & 0xFFL).toUpperCase();
+    private static String toHex(Integer i){
+        return "0x" + Integer.toHexString(i).toUpperCase();
     }
 
 
