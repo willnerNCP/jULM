@@ -13,7 +13,7 @@ public class MemoryPage {
         if(offset < 0 || offset+numBytes > PAGE_SIZE) throw new IndexOutOfBoundsException("Offset out of bounds");
         if(offset%numBytes != 0) throw new IllegalArgumentException("Alignment error");
 
-        long ret = ((long)bytes[offset] & 0xFFL);
+        long ret = ((long)bytes[offset] & 0xFFL); //cast from byte to long: byte is sign extended, that's why we need &0xFF
         for(int i = 1; i < numBytes; i++){
             ret = (ret << 8) + ((long)bytes[i+offset] & 0xFFL);
         }
@@ -24,7 +24,7 @@ public class MemoryPage {
         if(offset < 0 || offset+numBytes > PAGE_SIZE) throw new IndexOutOfBoundsException("Offset out of bounds");
         if(offset%numBytes != 0) throw new IllegalArgumentException("Alignment error");
         for(int i = numBytes-1; i >= 0; i--){
-            bytes[offset+i] = (byte)(value & 0xFFL);
+            bytes[offset+i] = (byte)value; //cast to byte truncates everything but the lowest byte
             //>>>: unsigned shift
             value = value >>> 8;
         }
@@ -35,7 +35,7 @@ public class MemoryPage {
         if(offset%numBytes != 0) throw new IllegalArgumentException("Alignment error");
 
         for(int i = 0; i < numBytes; i++){
-            bytes[offset+i] = (byte)(value & 0xFFL);
+            bytes[offset+i] = (byte)value;
             //>>>: unsigned shift
             value = value >>> 8;
         }
