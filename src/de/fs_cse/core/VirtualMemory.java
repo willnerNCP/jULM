@@ -13,6 +13,10 @@ public class VirtualMemory {
         pages = new HashMap<>();
     }
 
+    public void addObserver(ObserverMemory observer){
+        observers.add(observer);
+    }
+
     public long read(long address, int numBytes){
         long key = Long.divideUnsigned(address, MemoryPage.PAGE_SIZE);
         int offset = (int) Long.remainderUnsigned(address, MemoryPage.PAGE_SIZE);
