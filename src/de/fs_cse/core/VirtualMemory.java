@@ -11,6 +11,11 @@ public class VirtualMemory {
 
     public VirtualMemory(){
         pages = new HashMap<>();
+        observers = new ArrayList<>();
+    }
+
+    public void reset(){
+        pages = new HashMap<>();
     }
 
     public void addObserver(ObserverMemory observer){
@@ -41,5 +46,25 @@ public class VirtualMemory {
         }
         page.set(offset, numBytes, value);
         for(ObserverMemory observer : observers) observer.onWrite(address, numBytes, value);
+    }
+
+    public void loadProgram(int[] program){
+        MemoryPage page = pages.get(0L);
+        long key = 0L;
+        int offset = 0;
+        for(int i = 0; i < program.length; i++){
+            if(i%MemoryPage.PAGE_SIZE == 0){
+                page = pages.get(key);
+                if(page == null){
+                    page = new MemoryPage();
+                    pages.put(key, page);
+                }
+                key++;
+                offset = 0;
+            }
+            page.set(offset, 4, program[i]);
+            offset += 4;
+
+        }
     }
 }

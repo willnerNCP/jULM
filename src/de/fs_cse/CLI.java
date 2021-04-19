@@ -38,6 +38,14 @@ public class CLI implements ObserverALU, ObserverMemory, IODevice {
     }
 
     @Override
+    public void reset(){
+        out = "";
+        in = null;
+        index = 0;
+        scanner = new Scanner(System.in);
+    }
+
+    @Override
     public void onRead(int regId, long value) {
         System.out.println("ALU: " + toHex(value) + " was read from register\t" + toHex(regId));
     }

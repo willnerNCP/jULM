@@ -20,6 +20,11 @@ public class ALU {
         observers = new ArrayList<>();
     }
 
+    public void reset(){
+        registers = new long[NUM_REGS];
+        zf = cf = of = sf = false;
+    }
+
     public void addObserver(ObserverALU observer){
         observers.add(observer);
     }

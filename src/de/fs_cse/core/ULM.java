@@ -4,35 +4,40 @@ import de.fs_cse.CLI;
 
 public class ULM {
 
-    Instruction[] instructionSet;
+    private Instruction[] instructionSet;
 
     CPU cpu;
     IODevice io;
 
-    boolean halted;
-    boolean blocked;
-    Instruction instruction;
-    int exitCode;
-    int opcode;
-    int opfield;
-    String errorMessage;
+    private boolean halted;
+    private boolean blocked;
+    private Instruction instruction;
+    private int exitCode;
+    private int opcode;
+    private int opfield;
+    private String errorMessage;
 
-    public ULM(){
-        reset();
+    public ULM(IODevice io){
+        this.io = io;
+        cpu = new CPU();
         initInstructionSet();
     }
 
     public void reset(){
-        cpu = new CPU();
-        CLI cli = new CLI();
-        io = cli;
-        cpu.alu.addObserver(cli);
-        cpu.memory.addObserver(cli);
+        cpu.reset();
+        io.reset();
         halted = blocked = false;
         instruction = null;
         errorMessage = null;
         exitCode = opcode = opfield = 0;
-        loadProgram();
+    }
+
+    public void addObserverALU(ObserverALU observer){
+        cpu.alu.addObserver(observer);
+    }
+
+    public void addObserverMemory(ObserverMemory observer){
+        cpu.memory.addObserver(observer);
     }
 
     public void decodeInstruction(){
@@ -60,18 +65,43 @@ public class ULM {
         cpu.incrementIP();
     }
 
-    public void run(){
+    public int run(){
         while(!halted){
             step();
         }
+        if(errorMessage != null)
+            System.out.println(errorMessage);
+        return exitCode;
     }
 
     public void loadProgram(){
-        return;
+        // Program: IO
+        // int[] program = {0x30000000,
+        //         0x60010000,
+        //         0x39000100,
+        //         0x42000003,
+        //         0x61010000,
+        //         0x41FFFFFC,
+        //         0x09000000};
+
+        // Program: Hello World
+        int[] program = {0x56002001,
+                0x1B000102,
+                0x39000200,
+                0x42000004,
+                0x61020000,
+                0x38010101,
+                0x41FFFFFB,
+                0x09000000,
+                0x68656C6C,
+                0x6F2C2077,
+                0x6F726C64,
+                0x210A0000};
+        cpu.memory.loadProgram(program);
     }
 
     public void getc(OperationField opfield){
-        cpu.alu.write(opfield.rX, io.getc());
+        cpu.alu.write(opfield.rX, (long)io.getc() & 0xFF);
     }
 
     public void rPutc(OperationField opfield){

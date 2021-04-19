@@ -14,6 +14,14 @@ public class CPU {
         alu = new ALU();
     }
 
+    public void reset(){
+        ir = 0;
+        ip = 0;
+        jumped = false;
+        alu.reset();
+        memory.reset();
+    }
+
     public static long signExtend(long bitPattern, int size){
         long mask = (-1) << (size*8 - 1);
         if((mask & bitPattern) != 0){
