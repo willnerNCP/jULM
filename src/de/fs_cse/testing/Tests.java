@@ -4,12 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import de.fs_cse.core.ALU;
+import de.fs_cse.core.*;
 import org.junit.jupiter.api.Test;
-
-import de.fs_cse.core.MemoryPage;
-import de.fs_cse.core.OperationField;
-import de.fs_cse.core.VirtualMemory;
 
 public class Tests {
 
@@ -31,10 +27,10 @@ public class Tests {
         VirtualMemory memory = new VirtualMemory();
         long input1 = 0x89ABCDEFL;
         long input2 = 0x01234567L;
-        memory.set(0, 4, input1);
-        memory.set(-4, 4, input2);
-        long value1 = memory.get(0, 4);
-        long value2 = memory.get(-4, 4);
+        memory.write(0, 4, input1);
+        memory.write(-4, 4, input2);
+        long value1 = memory.read(0, 4);
+        long value2 = memory.read(-4, 4);
         assertEquals(input1, value1);
         assertEquals(input2, value2);
     }
@@ -144,6 +140,55 @@ public class Tests {
         assertEquals(0xFFFFL, alu.read(3));
         alu.not(new OperationField(0x00020300));
         assertEquals((long)0xFFFFF0F0, alu.read(3));
+    }
+
+    @Test
+    void testCPU(){
+        //sign extend
+        long bitPattern = 0xFFL;
+        bitPattern = CPU.signExtend(bitPattern, 1);
+        assertEquals(-1, bitPattern);
+
+        //bus
+        CPU cpu = new CPU();
+        ALU alu = cpu.alu;
+        alu.write(1, 4);
+        alu.write(2, 12);
+        alu.write(3, 0x80000001L);
+        OperationField rStoreOp = new OperationField(0x00030102);
+        OperationField sStoreOp = new OperationField(0x0003FC02);
+        cpu.rStore(rStoreOp, 4, 0);
+        cpu.sStore(sStoreOp, 4);
+        OperationField rFetchOp = new OperationField(0x00010204);
+        OperationField sFetchOp = new OperationField(0x00FC0205);
+        cpu.rFetch(rFetchOp, 4, 0, false);
+        cpu.sFetch(sFetchOp, 4, false);
+        assertEquals(0x80000001L, alu.read(4));
+        assertEquals(0x80000001L, alu.read(5));
+        cpu.rFetch(rFetchOp, 4, 0, true);
+        cpu.sFetch(sFetchOp, 4, true);
+        assertEquals((long)0x80000001, alu.read(4));
+        assertEquals((long)0x80000001, alu.read(5));
+
+        //jumps
+        cpu.absJmp(new OperationField(0x00010200));
+        assertEquals(4, cpu.ip);
+        OperationField jmpOp = new OperationField(0x00000001);
+        cpu.relJmp(jmpOp);
+        assertEquals(8, cpu.ip);
+        //jz jnz
+        cpu.incrementIP();
+        alu.sub(10, 10, 0);
+        cpu.jnz(jmpOp);
+        assertFalse(cpu.jumped);
+        cpu.jz(jmpOp);
+        assertTrue(cpu.jumped);
+        cpu.incrementIP();
+        alu.sub(10, 11, 0);
+        cpu.jz(jmpOp);
+        assertFalse(cpu.jumped);
+        cpu.jnz(jmpOp);
+        assertTrue(cpu.jumped);
     }
 
 }

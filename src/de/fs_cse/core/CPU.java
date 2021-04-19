@@ -23,7 +23,7 @@ public class CPU {
     }
 
     public void loadInstruction(){
-        ir = (int) memory.get(ip, 4);
+        ir = (int) memory.read(ip, 4);
     }
 
     public void incrementIP(){
@@ -31,29 +31,33 @@ public class CPU {
         else ip += 4;
     }
 
+    //BUS SECTION
+
     public void rFetch(OperationField opfield, int size, int scale, boolean signed){
         long address = alu.read(opfield.rX) + (alu.read(opfield.rY) << (8*scale));
-        long z = memory.get(address, size);
+        long z = memory.read(address, size);
         if(signed) z = signExtend(z, size);
         alu.write(opfield.rZ, z);
     }
 
     public void sFetch(OperationField opfield, int size, boolean signed){
         long address = opfield.sX + alu.read(opfield.rY);
-        long z = memory.get(address, size);
+        long z = memory.read(address, size);
         if(signed) z = signExtend(z, size);
         alu.write(opfield.rZ, z);
     }
 
     public void rStore(OperationField opfield, int size, int scale){
         long address = alu.read(opfield.rY) + (alu.read(opfield.rZ) << (8*scale));
-        memory.set(address, size, alu.read(opfield.rX));
+        memory.write(address, size, alu.read(opfield.rX));
     }
 
     public void sStore(OperationField opfield, int size){
         long address = opfield.sY + alu.read(opfield.rZ);
-        memory.set(address, size, alu.read(opfield.rX));
+        memory.write(address, size, alu.read(opfield.rX));
     }
+
+    //JUMP SECTION
 
     public void absJmp(OperationField opfield){
         alu.write(opfield.rY, ip + 4);

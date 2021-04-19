@@ -1,8 +1,10 @@
 package de.fs_cse.core;
 
+import java.util.ArrayList;
+
 public class ALU {
 
-    private static int NUM_REGS = 256;
+    public static int NUM_REGS = 256;
 
     public long[] registers;
 
@@ -11,19 +13,26 @@ public class ALU {
     public boolean of;
     public boolean sf;
 
+    public ArrayList<ObserverALU> observers;
+
     public ALU(){
         registers = new long[NUM_REGS];
+        observers = new ArrayList<>();
+    }
+
+    public void addObserver(ObserverALU observer){
+        observers.add(observer);
     }
 
     public long read(int regId){
         long value = registers[regId];
-        //TODO: Inform observer
+        for(ObserverALU observer : observers) observer.onRead(regId, value);
         return value;
     }
 
     public void write(int regId, long value){
         if(regId == 0x00) value = 0;
-        //TODO: Inform observer
+        for(ObserverALU observer : observers) observer.onWrite(regId, value);
         registers[regId] = value;
     }
 
@@ -106,7 +115,7 @@ public class ALU {
         add(opfield.uX, read(opfield.rY), opfield.rZ);
     }
 
-    private void sub(long x, long y, int regId){
+    public void sub(long x, long y, int regId){
         long z = y - x;
         write(regId, z);
 
@@ -144,8 +153,5 @@ public class ALU {
 
         zf = y == 0;
     }
-
-
-
 
 }

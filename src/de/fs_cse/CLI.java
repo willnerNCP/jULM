@@ -4,10 +4,6 @@ import de.fs_cse.core.IODevice;
 import de.fs_cse.core.ObserverALU;
 import de.fs_cse.core.ObserverMemory;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
 
 public class CLI implements ObserverALU, ObserverMemory, IODevice {
