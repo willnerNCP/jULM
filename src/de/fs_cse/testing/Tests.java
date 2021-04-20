@@ -140,6 +140,42 @@ public class Tests {
         assertEquals(0xFFFFL, alu.read(3));
         alu.not(new OperationField(0x00020300));
         assertEquals((long)0xFFFFF0F0, alu.read(3));
+
+        //mul div
+        //unsigned
+        alu.reset();
+        alu.registers[1] = -1;
+        alu.registers[2] = -1;
+        alu.registers[3] = -1;
+        alu.rDivUnsigned(new OperationField(0x00030104));
+        assertEquals(1, alu.read(4));
+        assertEquals(1, alu.read(5));
+        assertEquals(0, alu.read(6));
+        alu.registers[1] = -1;
+        alu.registers[2] = 0;
+        alu.registers[3] = 17;
+        alu.rDivUnsigned(new OperationField(0x00030104));
+        assertEquals(0x0F0F0F0F0F0F0F0FL, alu.read(4));
+        assertEquals(0, alu.read(5));
+        assertEquals(0, alu.read(6));
+        alu.registers[1] = 25;
+        alu.registers[2] = 0;
+        alu.uDivUnsigned(new OperationField(0x00040103));
+        assertEquals(6, alu.read(3));
+        assertEquals(0, alu.read(4));
+        assertEquals(1, alu.read(5));
+        //signed
+        alu.reset();
+        alu.registers[1] = -25;
+        alu.registers[2] = 113;
+        alu.rMul(new OperationField(0x00010203));
+        alu.rDivSigned(new OperationField(0x00020304));
+        assertEquals(-25, alu.read(4));
+        alu.registers[1] = -17;
+        alu.sDivSigned(new OperationField(0x00040104));
+        assertEquals(-4, alu.read(4));
+        assertEquals(-1, alu.read(5));
+
     }
 
     @Test

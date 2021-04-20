@@ -1,5 +1,6 @@
 package de.fs_cse.core;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class ALU {
@@ -40,6 +41,9 @@ public class ALU {
         for(ObserverALU observer : observers) observer.onWrite(regId, value);
         registers[regId] = value;
     }
+
+    // OPERATION SECTION
+    // prefix r denotes operation with register value, prefixes u (s) denote operations with immediate unsigned (signed) value
 
     private void load(int regId, long value){
         write(regId, value);
@@ -157,6 +161,74 @@ public class ALU {
         write(opfield.rY, y);
 
         zf = y == 0;
+    }
+
+    public void rMul(OperationField opfield){
+        mul128(read(opfield.rX), read(opfield.rY), opfield.rZ);
+    }
+
+    public void sMul(OperationField opfield){
+        mul128(opfield.sX, read(opfield.rY), opfield.rZ);
+    }
+
+    public void rDivUnsigned(OperationField opfield){
+        div128(read(opfield.rX), read(opfield.rY), read(opfield.rY+1), opfield.rZ);
+    }
+
+    public void uDivUnsigned(OperationField opfield){
+        div128(opfield.uX, read(opfield.rY), read(opfield.rY+1), opfield.rZ);
+    }
+
+    public void rDivSigned(OperationField opfield){
+        div64(read(opfield.rX), read(opfield.rY), opfield.rZ);
+    }
+
+    public void sDivSigned(OperationField opfield){
+        div64(opfield.sX, read(opfield.rY), opfield.rZ);
+    }
+
+    public void div64(long b, long a, int regId){
+        long sign = (a > 0 && b > 0) || (a < 0 && b < 0)? 1 : -1;
+        long result = sign * Math.abs(a)/Math.abs(b);
+        long remainder = a - b * result;
+        write(regId, result);
+        write(regId+1, remainder);
+    }
+
+    private void mul128(long a, long b, int regId){
+        BigInteger result = BigInteger.valueOf(a).multiply(BigInteger.valueOf(b));
+        long resultLow = result.longValue();
+        long resultHigh = result.shiftRight(64).longValue();
+        write(regId, resultLow);
+        if(resultHigh != 0) cf = of = true;
+    }
+
+    private void div128(long b, long aLow, long aHigh, int regId){
+        BigInteger a = new BigInteger(uLongToBytes(aHigh));
+        //System.out.println(divisor);
+        a = a.shiftLeft(64);
+        a = a.add(new BigInteger(uLongToBytes(aLow)));
+        BigInteger[] divAndRem = a.divideAndRemainder(new BigInteger(uLongToBytes(b)));
+        long resultLow = divAndRem[0].longValue();
+        long resultHigh = divAndRem[0].shiftRight(64).longValue();
+        long remainder = divAndRem[1].longValue();
+        write(regId, resultLow);
+        write(regId+1, resultHigh);
+        write(regId+2, remainder);
+    }
+
+    private static byte[] uLongToBytes(long data) {
+        return new byte[]{
+                0x00,
+                (byte) ((data >> 56) & 0xFF),
+                (byte) ((data >> 48) & 0xFF),
+                (byte) ((data >> 40) & 0xFF),
+                (byte) ((data >> 32) & 0xFF),
+                (byte) ((data >> 24) & 0xFF),
+                (byte) ((data >> 16) & 0xFF),
+                (byte) ((data >> 8) & 0xFF),
+                (byte) ((data) & 0xFF),
+        };
     }
 
 }

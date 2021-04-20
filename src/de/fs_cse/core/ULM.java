@@ -76,7 +76,8 @@ public class ULM {
 
     public void loadProgram(){
         // Program: IO
-        // int[] program = {0x30000000,
+        // int[] program = {
+        //         0x30000000,
         //         0x60010000,
         //         0x39000100,
         //         0x42000003,
@@ -85,7 +86,8 @@ public class ULM {
         //         0x09000000};
 
         // Program: Hello World
-        int[] program = {0x56002001,
+        int[] program = {
+                0x56002001,
                 0x1B000102,
                 0x39000200,
                 0x42000004,
@@ -96,7 +98,8 @@ public class ULM {
                 0x68656C6C,
                 0x6F2C2077,
                 0x6F726C64,
-                0x210A0000};
+                0x210A0000,
+        };
         cpu.memory.loadProgram(program);
     }
 
@@ -127,11 +130,17 @@ public class ULM {
         //HALT
         instructionSet[0x01] = (ulm, opfield) -> ulm.rHalt(opfield);
         instructionSet[0x09] = (ulm, opfield) -> ulm.uHalt(opfield);
-        //ADD SUB
+        //ADD SUB MUL DIV
         instructionSet[0x30] = (ulm, opfield) -> ulm.cpu.alu.rAdd(opfield);
         instructionSet[0x31] = (ulm, opfield) -> ulm.cpu.alu.rSub(opfield);
+        instructionSet[0x33] = (ulm, opfield) -> ulm.cpu.alu.rDivUnsigned(opfield);
+        instructionSet[0x34] = (ulm, opfield) -> ulm.cpu.alu.rMul(opfield);
+        instructionSet[0x35] = (ulm, opfield) -> ulm.cpu.alu.rDivSigned(opfield);
         instructionSet[0x38] = (ulm, opfield) -> ulm.cpu.alu.uAdd(opfield);
         instructionSet[0x39] = (ulm, opfield) -> ulm.cpu.alu.uSub(opfield);
+        instructionSet[0x3B] = (ulm, opfield) -> ulm.cpu.alu.uDivUnsigned(opfield);
+        instructionSet[0x3C] = (ulm, opfield) -> ulm.cpu.alu.sMul(opfield);
+        instructionSet[0x3D] = (ulm, opfield) -> ulm.cpu.alu.sDivSigned(opfield);
         //JMP
         instructionSet[0x40] = (ulm, opfield) -> ulm.cpu.absJmp(opfield);
         instructionSet[0x41] = (ulm, opfield) -> ulm.cpu.relJmp(opfield);
