@@ -1,13 +1,11 @@
 package de.fs_cse.core;
 
-import de.fs_cse.CLI;
-
 public class ULM {
 
     private Instruction[] instructionSet;
 
-    CPU cpu;
-    IODevice io;
+    private CPU cpu;
+    private IODevice io;
 
     private boolean halted;
     private boolean blocked;
@@ -40,7 +38,7 @@ public class ULM {
         cpu.memory.addObserver(observer);
     }
 
-    public void decodeInstruction(){
+    private void decodeInstruction(){
         opcode = cpu.ir >>> 24;
         instruction = instructionSet[opcode];
         if(instruction == null){
@@ -51,18 +49,20 @@ public class ULM {
         opfield = cpu.ir & 0xFFFFFF;
     }
 
-    public void step(){
+    public boolean step(){
         cpu.loadInstruction();
 
         decodeInstruction();
 
-        if(halted) return;
+        if(halted) return false;
 
         instruction.execute(this, new OperationField(opfield));
 
-        if(halted || blocked) return;
+        if(halted || blocked) return false;
 
         cpu.incrementIP();
+
+        return true;
     }
 
     public int run(){
@@ -74,58 +74,33 @@ public class ULM {
         return exitCode;
     }
 
-    public void loadProgram(){
-        // Program: IO
-        // int[] program = {
-        //         0x30000000,
-        //         0x60010000,
-        //         0x39000100,
-        //         0x42000003,
-        //         0x61010000,
-        //         0x41FFFFFC,
-        //         0x09000000};
-
-        // Program: Hello World
-        int[] program = {
-                0x56002001,
-                0x1B000102,
-                0x39000200,
-                0x42000004,
-                0x61020000,
-                0x38010101,
-                0x41FFFFFB,
-                0x09000000,
-                0x68656C6C,
-                0x6F2C2077,
-                0x6F726C64,
-                0x210A0000,
-        };
+    public void loadProgram(int[] program){
         cpu.memory.loadProgram(program);
     }
 
-    public void getc(OperationField opfield){
+    private void getc(OperationField opfield){
         cpu.alu.write(opfield.rX, (long)io.getc() & 0xFF);
     }
 
-    public void rPutc(OperationField opfield){
+    private void rPutc(OperationField opfield){
         io.putc((char)cpu.alu.read(opfield.rX)); //cast by cutoff
     }
 
-    public void uPutc(OperationField opfield){
+    private void uPutc(OperationField opfield){
         io.putc((char)opfield.uX); //cast by cutoff
     }
 
-    public void rHalt(OperationField opfield){
+    private void rHalt(OperationField opfield){
         exitCode = (int)(cpu.alu.read(opfield.rX) & 0xFFL);
         halted = true;
     }
 
-    public void uHalt(OperationField opfield){
+    private void uHalt(OperationField opfield){
         exitCode = (int)(opfield.uX & 0xFFL);
         halted = true;
     }
 
-    public void initInstructionSet(){
+    private void initInstructionSet(){
         instructionSet = new Instruction[256];
         //HALT
         instructionSet[0x01] = (ulm, opfield) -> ulm.rHalt(opfield);

@@ -10,19 +10,6 @@ import org.junit.jupiter.api.Test;
 public class Tests {
 
     @Test
-    void testMemoryPage(){
-        MemoryPage page = new MemoryPage();
-        long input1 = 0x89ABCDEFL;
-        long input2 = 0x01234567L;
-        page.set(0, 4, input1);
-        long value = page.get(0, 4);
-        assertEquals(input1, value);
-        page.set(3, 3, input2);
-        value = page.get(0, 8);
-        assertEquals(0x89ABCD2345670000L, value);
-    }
-
-    @Test
     void testVirtualMemory(){
         VirtualMemory memory = new VirtualMemory();
         long input1 = 0x89ABCDEFL;
