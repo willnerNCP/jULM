@@ -38,6 +38,11 @@ public class CLI implements ObserverALU, ObserverMemory, IODevice {
     }
 
     @Override
+    public boolean hasNextChar() {
+        return true;
+    }
+
+    @Override
     public void reset(){
         out = "";
         in = null;
@@ -63,6 +68,11 @@ public class CLI implements ObserverALU, ObserverMemory, IODevice {
     @Override
     public void onWrite(long address, int numBytes, long value) {
         System.out.println("Bus: " + toHex(value) + " was written to address\t" + toHex(address));
+    }
+
+    @Override
+    public void onLoadProgram(int[] program) {
+        return;
     }
 
     private static String toHex(long i){

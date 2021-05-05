@@ -24,6 +24,7 @@ public class ALU {
     public void reset(){
         registers = new long[NUM_REGS];
         zf = cf = of = sf = false;
+        for(ObserverALU observer : observers) observer.reset();
     }
 
     public void addObserver(ObserverALU observer){

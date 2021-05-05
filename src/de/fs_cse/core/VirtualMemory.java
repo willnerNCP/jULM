@@ -19,6 +19,7 @@ public class VirtualMemory {
 
     public void reset(){
         pages = new HashMap<>();
+        for(ObserverMemory observer : observers) observer.reset();
     }
 
     public void addObserver(ObserverMemory observer){
@@ -26,14 +27,19 @@ public class VirtualMemory {
     }
 
     public long read(long address, int numBytes){
+        long value = peek(address, numBytes);
+        for(ObserverMemory observer : observers) observer.onRead(address, numBytes, value);
+        return value;
+    }
+
+    //reads bytes from memory w/o informing the observers
+    public long peek(long address, int numBytes){
         long key = Long.divideUnsigned(address, PAGE_SIZE);
         int offset = (int) Long.remainderUnsigned(address, PAGE_SIZE);
 
         long value = 0;
         MemoryPage page = pages.get(key);
         if(page != null) value = page.get(offset, numBytes);
-
-        for(ObserverMemory observer : observers) observer.onRead(address, numBytes, value);
 
         return value;
     }
@@ -69,6 +75,7 @@ public class VirtualMemory {
             offset += 4;
 
         }
+        for(ObserverMemory observer : observers) observer.onLoadProgram(program);
     }
 
     public class MemoryPage {
